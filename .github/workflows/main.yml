@@ -48,7 +48,7 @@ jobs:
     # Create namespace if doesn't exist
     # run a shell script - ie. command line
     - run: |
-        kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
+        kubectl create namespace ${{ env.NAMESPACE }}
   
     # Create image pull secret for ACR
     # use out of the box actions from microsoft
