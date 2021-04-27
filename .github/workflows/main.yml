@@ -26,7 +26,7 @@ jobs:
     steps:
     # out of the box actions from microsoft
     - uses: actions/checkout@main
-    - name: checkout
+      name: checkout
     
     # Connect to Azure Container registry (ACR)
     # out of the box actions from microsoft - 'uses' indicates this
@@ -36,14 +36,14 @@ jobs:
         login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
         username: ${{ secrets.REGISTRY_USERNAME }} 
         password: ${{ secrets.REGISTRY_PASSWORD }}
-    - name: log into azure registry
+      name: log into azure registry
     
     # Container build and push to a Azure Container registry (ACR)
     # run a shell script - ie. command line
     - run: |
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
-    - name: build and push docker image
+      name: build and push docker image
         
   UAT:
     # add job dependency on 'build'
@@ -54,10 +54,10 @@ jobs:
     # run a shell script - ie. command line
     - run: |
         echo 'this is where we are going to create namespaces for deployment'
-    - name: create namespace
+      name: create namespace
     - run: |
         echo 'this is where we configure the deployment secret'
-    - name: configure deployment secret
+      name: configure deployment secret
         
   Staging:
     needs: UAT
@@ -65,5 +65,5 @@ jobs:
     steps:
     - run: |
         echo 'this is where we deploy our application to the kubernetes cluster'
-    - name: deploy image to kubernetes cluster
+      name: deploy image to kubernetes cluster
         
