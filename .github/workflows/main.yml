@@ -10,7 +10,7 @@ on:
     - "*"  # run for branches
 #global environment variables used for the jobs below
 env:
-  REGISTRY_NAME: mmdemoregistry
+  REGISTRY_NAME: mmdemotest
   CLUSTER_NAME: demoMMTest
   CLUSTER_RESOURCE_GROUP: mm-demo-front-end-test
   NAMESPACE: sock-shop
