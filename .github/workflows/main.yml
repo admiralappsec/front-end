@@ -14,7 +14,7 @@ env:
   CLUSTER_NAME: demoMMTest
   CLUSTER_RESOURCE_GROUP: mm-demo-front-end-test
   NAMESPACE: sock-shop
-  APP_NAME: myApp
+  APP_NAME: front-end
   
 jobs:
   build:
