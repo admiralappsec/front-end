@@ -15,21 +15,50 @@ env:
   CLUSTER_RESOURCE_GROUP: mm-demo-front-end-test
   NAMESPACE: sock-shop
   APP_NAME: front-end
+  SECRET: 
   
 jobs:
+# this job is labeled build - builds docker image and pushes to the registry - likeness to a 'stage'
   build:
+    # image this operation will run on
     runs-on: ubuntu-latest
+    # steps that are executed within the specified stage
     steps:
+    # out of the box actions from microsoft
     - uses: actions/checkout@main
     
     # Connect to Azure Container registry (ACR)
+    # out of the box actions from microsoft - 'uses' indicates this
     - uses: azure/docker-login@v1
       with:
+        # pass in the following variables into the action
         login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
         username: ${{ secrets.REGISTRY_USERNAME }} 
         password: ${{ secrets.REGISTRY_PASSWORD }}
     
     # Container build and push to a Azure Container registry (ACR)
+    # run a shell script - ie. command line
     - run: |
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+        
+  prep-for-deployment:
+    runs-on: ubuntu-latest
+    steps:
+    # Create namespace if doesn't exist
+    # run a shell script - ie. command line
+    - run: |
+        kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
+  
+    # Create image pull secret for ACR
+    # use out of the box actions from microsoft
+    - uses: azure/k8s-create-secret@v1
+      # pass in the following variables into the action
+      with:
+        container-registry-url: ${{ env.REGISTRY_NAME }}.azurecr.io
+        container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+        container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+        secret-name: ${{ env.SECRET }}
+        namespace: ${{ env.NAMESPACE }}
+        arguments: --force true
+        
