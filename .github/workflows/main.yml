@@ -1,76 +1,35 @@
+# name of the workflow - in this case, continuous integration
 name: ci
-
+# controls when the action will run.  Triggers on all push or pull requests on all branches
 on:
   push:
     branches:
     - "*"  # run for branches
-    tags:
-    - "*"  # run for tags
   pull_request:
     branches:
     - "*"  # run for branches
-    tags:
-    - "*"  # run for tags
-
+#global environment variables used for the jobs below
+env:
+  REGISTRY_NAME: mmDemoRegistry
+  CLUSTER_NAME: demoMMTest
+  CLUSTER_RESOURCE_GROUP: mm-demo-front-end-test
+  NAMESPACE: sock-shop
+  APP_NAME: myApp
+  
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
-    env:
-      GROUP: mmDemoTest 
-      COMMIT: ${{ github.sha }}
-      REPO: front-end
     steps:
-    - uses: actions/checkout@v2
-
-    #
-    #
-    # Set up  node
-    - uses: actions/setup-node@v1
+    - uses: actions/checkout@main
+    
+    # Connect to Azure Container registry (ACR)
+    - uses: azure/docker-login@v1
       with:
-        node-version: '4.x'
-
-    #
-    #
-    # Install dependencies
-    - run: npm install
-
-    #
-    #
-    # Run node tests in docker image
-    - name: Test image
-      env:
-        DOCKER_BUILDKIT: 1
-      run: make test
-
-    #
-    #
-    # Build docker image for service
-    - name: Build docker image
-      uses: docker/build-push-action@v1
-      with:
-        push: false
-        repository: ${{ env.GROUP }}/${{ env.REPO }}
-        tag_with_ref: true
-        tag_with_sha: true
-        tags: ${{ github.sha }}
-
-    #
-    #
-    # Run simple test against built container
-    - name: Test docker image
-      env:
-        DOCKER_BUILDKIT: 1
-      run: ./test/container.sh
-
-    #
-    #
-    # Push to dockerhub
-    - name: Push to Docker Hub
-      uses: docker/build-push-action@v1
-      if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master'
-      with:
-        username: ${{ secrets.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_PASS }}
-        repository: ${{ env.GROUP }}/${{ env.REPO }}
-        tag_with_ref: true
-        tag_with_sha: true
+        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }} 
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    
+    # Container build and push to a Azure Container registry (ACR)
+    - run: |
+        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
