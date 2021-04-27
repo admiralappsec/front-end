@@ -15,7 +15,7 @@ env:
   CLUSTER_RESOURCE_GROUP: mm-demo-front-end-test
   NAMESPACE: sock-shop
   APP_NAME: front-end
-  SECRET: 
+  SECRET: deploySecret
   
 jobs:
 # this job is labeled build - builds docker image and pushes to the registry - likeness to a 'stage'
