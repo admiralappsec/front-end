@@ -43,22 +43,21 @@ jobs:
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
         
   prep-for-deployment:
+    # add job dependency on 'build'
+    needs: build
     runs-on: ubuntu-latest
     steps:
     # Create namespace if doesn't exist
     # run a shell script - ie. command line
     - run: |
-        kubectl create namespace ${{ env.NAMESPACE }} --dry-run -o json | kubectl apply -f -
-  
-    # Create image pull secret for ACR
-    # use out of the box actions from microsoft
-    - uses: azure/k8s-create-secret@v1
-      # pass in the following variables into the action
-      with:
-        container-registry-url: ${{ env.REGISTRY_NAME }}.azurecr.io
-        container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
-        container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-        secret-name: ${{ env.SECRET }}
-        namespace: ${{ env.NAMESPACE }}
-        arguments: --force true
+        echo 'this is where we are going to create namespaces for deployment'
+    - run: |
+        echo 'this is where we configure the deployment secret'
+        
+  deployment:
+    needs: prep-for-deployment
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+        echo 'this is where we deploy our application to the kubernetes cluster'
         
