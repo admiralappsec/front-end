@@ -97,4 +97,4 @@ make e2e
 
 `GROUP=weaveworksdemos COMMIT=test ./scripts/push.sh`
 
-adding some custom text for trigger
+adding some custom text for trigger...
