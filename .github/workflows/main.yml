@@ -19,7 +19,7 @@ env:
   
 jobs:
 # this job is labeled build - builds docker image and pushes to the registry - likeness to a 'stage'
-  build:
+  build-docker-image:
     # image this operation will run on
     runs-on: ubuntu-latest
     # steps that are executed within the specified stage
@@ -42,9 +42,9 @@ jobs:
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
         
-  prep-for-deployment:
+  prep-for-kubernetes-deployment:
     # add job dependency on 'build'
-    needs: build
+    needs: build-docker-image
     runs-on: ubuntu-latest
     steps:
     # Create namespace if doesn't exist
@@ -54,8 +54,8 @@ jobs:
     - run: |
         echo 'this is where we configure the deployment secret'
         
-  deployment:
-    needs: prep-for-deployment
+  kubernetes-deployment:
+    needs: prep-for-kubernetes-deployment
     runs-on: ubuntu-latest
     steps:
     - run: |
