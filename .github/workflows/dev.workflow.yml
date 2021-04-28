@@ -58,7 +58,7 @@ jobs:
         context: .
         file: ./Dockerfile
         tags: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
-        outputs: type=docker,dest=/tmp/${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}.tar
+        outputs: type=docker,dest=/tmp/${{ env.APP_NAME }}-${{ github.sha }}.tar
       # explicitly passing the name of this step - must be AFTER 'run'
       name: Build/test and package docker image artifact
       
@@ -69,7 +69,7 @@ jobs:
       with:
         # pass in the following variables into the action
         name: myimage
-        path: /tmp/myimage.tar
+        path: /tmp/${{ env.APP_NAME }}-${{ github.sha }}.tar
       # explicitly passing the name of this step - must be AFTER 'run'
       name: upload artifact
       
