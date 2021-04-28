@@ -38,18 +38,6 @@ jobs:
       # explicitly passing the name of this step - must be AFTER 'uses'
       name: checkout main branch
     
-    # Connect to Azure Container registry (ACR)
-    # out of the box actions from microsoft - 'uses' indicates this
-    - uses: azure/docker-login@v1
-      # 'with' implies using external variables to pass into the action
-      with:
-        # pass in the following variables into the action
-        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
-        username: ${{ secrets.REGISTRY_USERNAME }} 
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-      # explicitly passing the name of this step - must be AFTER 'uses' and 'with'
-      name: log into azure registry
-    
     # uses the docker buildx driver for the build-push-action action
     - uses: docker/setup-buildx-action@v1
       # explicitly passing the name of this step - must be AFTER 'uses' and 'with'
@@ -114,7 +102,20 @@ jobs:
         docker load --input /tmp/${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}.tar
         docker image ls -a
       # explicitly passing the name of this step - must be AFTER 'run'
-      name: load docker image  
+      name: load docker image
+    
+    # Connect to Azure Container registry (ACR)
+    # out of the box actions from microsoft - 'uses' indicates this
+    - uses: azure/docker-login@v1
+      # 'with' implies using external variables to pass into the action
+      with:
+        # pass in the following variables into the action
+        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }} 
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+      # explicitly passing the name of this step - must be AFTER 'uses' and 'with'
+      name: log into azure registry
+      
     # push container to a Azure Container registry (ACR)
     # run a shell script - ie. command line
     - run: |
