@@ -1,5 +1,5 @@
 # name of the workflow - in this case, developer workflow
-name: Developer Docker BUILD TEST CONTRAST COMMIT
+name: Dev Docker Build Test Contrast Commit
 
 # controls when the action will run.  Triggers on all push or pull requests on all branches
 on:
@@ -96,9 +96,7 @@ jobs:
         path: /tmp
       # explicitly passing the name of this step - must be AFTER 'run'
       name: Download docker image artifact
-    - run: |
-        cd /tmp; ls;
-      name: What is inside
+      
     # load docker image into local memory, so the image can be pushed to the registry
     # run a shell script - ie. command line
     - run: |
