@@ -133,6 +133,7 @@ jobs:
       name: Repository Dispatch
 
   Deploy_Test_Integration:
+    needs: Commit_Artifact
     # image this operation will run on
     runs-on: ubuntu-latest
     # steps that are executed within the specified stage
