@@ -36,7 +36,7 @@ jobs:
     # this action checks out the main github branch of code
     - uses: actions/checkout@main
       # explicitly passing the name of this step - must be AFTER 'uses'
-      name: checkout main branch
+      name: Checkout main branch
     
     # uses the docker buildx driver for the build-push-action action
     - uses: docker/setup-buildx-action@v1
@@ -53,7 +53,7 @@ jobs:
         tags: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
         outputs: type=docker,dest=/tmp/${{ env.APP_NAME }}-${{ github.sha }}.tar
       # explicitly passing the name of this step - must be AFTER 'run'
-      name: Build/test and package docker image artifact
+      name: Build, test, and package docker image artifact
       
     # uploads artifacts to enable download and reuse for downstream jobs
     # out of the box actions from microsoft - 'uses' indicates this
@@ -64,10 +64,10 @@ jobs:
         name: ${{ env.APP_NAME }}-${{ github.sha }}-image
         path: /tmp/${{ env.APP_NAME }}-${{ github.sha }}.tar
       # explicitly passing the name of this step - must be AFTER 'run'
-      name: upload artifact
+      name: Upload docker image artifact
       
   # this job is labeled security-gate - once build/test criteria is met, this job runs to validate vulnerabilities against set gate thresholds - likeness to a 'stage'
-  security-gate:
+  Contrast Security Security-Gate:
     # this job depends on 'build-test' completing successfully - dependency
     needs: build-test
     # image this operation will run on
@@ -95,14 +95,14 @@ jobs:
         name: ${{ env.APP_NAME }}-${{ github.sha }}-image
         path: /tmp
       # explicitly passing the name of this step - must be AFTER 'run'
-      name: download docker image artifact
+      name: Download docker image artifact
     # load docker image into local memory, so the image can be pushed to the registry
     # run a shell script - ie. command line
     - run: |
         docker load --input /tmp/${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}.tar
         docker image ls -a
       # explicitly passing the name of this step - must be AFTER 'run'
-      name: load docker image
+      name: Load docker image into local repository
     
     # Connect to Azure Container registry (ACR)
     # out of the box actions from microsoft - 'uses' indicates this
@@ -114,11 +114,11 @@ jobs:
         username: ${{ secrets.REGISTRY_USERNAME }} 
         password: ${{ secrets.REGISTRY_PASSWORD }}
       # explicitly passing the name of this step - must be AFTER 'uses' and 'with'
-      name: log into azure registry
+      name: Log into azure registry
       
     # push container to a Azure Container registry (ACR)
     # run a shell script - ie. command line
     - run: |
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
       # explicitly passing the name of this step - must be AFTER 'run'
-      name: push container image to registry
+      name: Push container image from local to destination repository
