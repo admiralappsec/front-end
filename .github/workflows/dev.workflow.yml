@@ -1,0 +1,118 @@
+# name of the workflow - in this case, developer workflow
+name: developer workflow
+
+# controls when the action will run.  Triggers on all push or pull requests on all branches
+on:
+  # trigger on push event
+  push:
+    # run for all branches
+    branches:
+    # query filter
+    - "*"
+  # trigger on pull request event
+  pull_request:
+    # run for all branches
+    branches:
+    # query filter
+    - "*"
+    
+#global environment variables used for the jobs below
+env:
+  # name of the container image registry
+  REGISTRY_NAME: mmdemotest
+  # name of the application to be used - this will be used during the tag/commit phase of the build - as the repository name
+  APP_NAME: front-end
+  
+# jobs associated with this workflow  
+jobs:
+
+# this job is labeled build - builds docker image and runs any test inside the container as it builds - likeness to a 'stage'
+  build-test:
+    # image this operation will run on
+    runs-on: ubuntu-latest
+    # steps that are executed within the specified stage
+    steps:
+    # out of the box actions from microsoft
+    # this action checks out the main github branch of code
+    - uses: actions/checkout@main
+      # explicitly passing the name of this step - must be AFTER 'uses'
+      name: checkout main branch
+    
+    # Connect to Azure Container registry (ACR)
+    # out of the box actions from microsoft - 'uses' indicates this
+    - uses: azure/docker-login@v1
+      # 'with' implies using external variables to pass into the action
+      with:
+        # pass in the following variables into the action
+        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }} 
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+      # explicitly passing the name of this step - must be AFTER 'uses' and 'with'
+      name: log into azure registry
+
+    # container build and tar up the image to export and re-use in commit job
+    # out of the box actions from microsoft - 'uses' indicates this
+    - uses: docker/build-push-action@v2
+      # 'with' implies using external variables to pass into the action
+      with:
+        context: .
+        file: ./Dockerfile
+        tags: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+        outputs: type=docker,dest=/tmp/${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}.tar
+      # explicitly passing the name of this step - must be AFTER 'run'
+      name: Build/test and package docker image artifact
+      
+    # uploads artifacts to enable download and reuse for downstream jobs
+    # out of the box actions from microsoft - 'uses' indicates this
+    - uses: actions/upload-artifact@v2
+      # 'with' implies using external variables to pass into the action
+      with:
+        # pass in the following variables into the action
+        name: myimage
+        path: /tmp/myimage.tar
+      # explicitly passing the name of this step - must be AFTER 'run'
+      name: upload artifact
+      
+  # this job is labeled security-gate - once build/test criteria is met, this job runs to validate vulnerabilities against set gate thresholds - likeness to a 'stage'
+  security-gate:
+    # this job depends on 'build-test' completing successfully - dependency
+    needs: build-test
+    # image this operation will run on
+    runs-on: ubuntu-latest
+    # steps that are executed within the specified stage
+    steps:
+    # run a shell script - ie. command line
+    - run: |
+        echo 'this is an automated gate'; echo 'CRITERIA 1 has been successfully met.  Evaluating gate based on gate policies...';  echo 'gate policies passed.'
+      # explicitly passing the name of this step - must be AFTER 'run'
+      name: Contrast Security threshold check
+      
+  # this job is labeled commit - if the gate passes, this job downloads the tarred-up docker image and commits to the ACR
+  commit:
+    # this job depends on 'security-gate' completing successfully - dependency
+    needs: security-gate
+    # image this operation will run on
+    runs-on: ubuntu-latest
+    # steps that are executed within the specified stage
+    steps:
+    # downloads artifacts
+    # out of the box actions from microsoft - 'uses' indicates this
+    - uses: actions/download-artifact@v2
+      with:
+        name: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+        path: /tmp
+      # explicitly passing the name of this step - must be AFTER 'run'
+      name: download docker image artifact
+    # load docker image into local memory, so the image can be pushed to the registry
+    # run a shell script - ie. command line
+    - run: |
+        docker load --input /tmp/${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}.tar
+        docker image ls -a
+      # explicitly passing the name of this step - must be AFTER 'run'
+      name: load docker image  
+    # push container to a Azure Container registry (ACR)
+    # run a shell script - ie. command line
+    - run: |
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+      # explicitly passing the name of this step - must be AFTER 'run'
+      name: push container image to registry
