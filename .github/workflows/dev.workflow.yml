@@ -22,6 +22,7 @@ env:
   REGISTRY_NAME: mmdemotest
   # name of the application to be used - this will be used during the tag/commit phase of the build - as the repository name
   APP_NAME: front-end
+  REPOSITORY_PAT: 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
   
 # jobs associated with this workflow  
 jobs:
@@ -126,7 +127,7 @@ jobs:
     
     - uses: peter-evans/repository-dispatch@v1
       with:
-        token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        token: ${{ env.REPOSITORY_PAT }}
         repository: mmDemoTest/front-end
         event-type: my-event
         client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
