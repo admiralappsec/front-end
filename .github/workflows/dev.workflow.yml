@@ -61,7 +61,7 @@ jobs:
       # 'with' implies using external variables to pass into the action
       with:
         # pass in the following variables into the action
-        name: myimage
+        name: ${{ env.APP_NAME }}-${{ github.sha }}-image
         path: /tmp/${{ env.APP_NAME }}-${{ github.sha }}.tar
       # explicitly passing the name of this step - must be AFTER 'run'
       name: upload artifact
@@ -92,7 +92,7 @@ jobs:
     # out of the box actions from microsoft - 'uses' indicates this
     - uses: actions/download-artifact@v2
       with:
-        name: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+        name: ${{ env.APP_NAME }}-${{ github.sha }}-image
         path: /tmp
       # explicitly passing the name of this step - must be AFTER 'run'
       name: download docker image artifact
