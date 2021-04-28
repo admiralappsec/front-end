@@ -1,5 +1,5 @@
 # name of the workflow - in this case, developer workflow
-name: developer workflow
+name: Developer Docker BUILD TEST CONTRAST COMMIT
 
 # controls when the action will run.  Triggers on all push or pull requests on all branches
 on:
@@ -27,7 +27,7 @@ env:
 jobs:
 
 # this job is labeled build - builds docker image and runs any test inside the container as it builds - likeness to a 'stage'
-  Build_Test:
+  Build_Test_Artifact:
     # image this operation will run on
     runs-on: ubuntu-latest
     # steps that are executed within the specified stage
@@ -67,7 +67,7 @@ jobs:
       name: Upload docker image artifact
       
   # this job is labeled security-gate - once build/test criteria is met, this job runs to validate vulnerabilities against set gate thresholds - likeness to a 'stage'
-  Contrast_Security_Security_Gate:
+  Contrast_Security_Gate:
     # this job depends on 'build-test' completing successfully - dependency
     needs: Build_Test
     # image this operation will run on
@@ -81,7 +81,7 @@ jobs:
       name: Contrast Security threshold check
       
   # this job is labeled commit - if the gate passes, this job downloads the tarred-up docker image and commits to the ACR
-  Commit:
+  Commit_Artifact:
     # this job depends on 'security-gate' completing successfully - dependency
     needs: Contrast_Security_Security_Gate
     # image this operation will run on
