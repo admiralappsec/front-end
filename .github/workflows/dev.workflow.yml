@@ -96,6 +96,9 @@ jobs:
         path: /tmp
       # explicitly passing the name of this step - must be AFTER 'run'
       name: Download docker image artifact
+    - run: |
+        cd /tmp; ls;
+      name: What is inside
     # load docker image into local memory, so the image can be pushed to the registry
     # run a shell script - ie. command line
     - run: |
