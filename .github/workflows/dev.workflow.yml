@@ -49,6 +49,11 @@ jobs:
         password: ${{ secrets.REGISTRY_PASSWORD }}
       # explicitly passing the name of this step - must be AFTER 'uses' and 'with'
       name: log into azure registry
+    
+    # uses the docker buildx driver for the build-push-action action
+    - uses: docker/setup-buildx-action@v1
+      # explicitly passing the name of this step - must be AFTER 'uses' and 'with'
+      name: Set up Docker Buildx
 
     # container build and tar up the image to export and re-use in commit job
     # out of the box actions from microsoft - 'uses' indicates this
