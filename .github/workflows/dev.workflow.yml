@@ -102,7 +102,7 @@ jobs:
     # load docker image into local memory, so the image can be pushed to the registry
     # run a shell script - ie. command line
     - run: |
-        docker load --input /tmp/${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}.tar
+        docker load --input /tmp/${{ env.APP_NAME }}-${{ github.sha }}.tar
         docker image ls -a
       # explicitly passing the name of this step - must be AFTER 'run'
       name: Load docker image into local repository
