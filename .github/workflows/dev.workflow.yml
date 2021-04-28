@@ -123,3 +123,11 @@ jobs:
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
       # explicitly passing the name of this step - must be AFTER 'run'
       name: Push container image from local to destination repository
+    
+    - uses: peter-evans/repository-dispatch@v1
+      with:
+        token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        repository: mmDemoTest/front-end
+        event-type: my-event
+        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
+      name: Repository Dispatch
